@@ -1,24 +1,24 @@
 const canvas = document.querySelector('canvas');
 
-canvas.width = 1024;
+canvas.width = 576;
 canvas.height = 576;
 
 const gravity_sim = 0.5;
 
 const keys = {
     a: {
-      pressed: false
+        pressed: false
     },
     d: {
-      pressed: false
+        pressed: false
     },
     ArrowRight: {
-      pressed: false
+        pressed: false
     },
     ArrowLeft: {
-      pressed: false
+        pressed: false
     }
-  }
+}
 
 const ctx = canvas.getContext('2d');
 
@@ -26,35 +26,47 @@ ctx.fillStyle = 'black';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 class Sprite {
-    constructor({position,velocity,color}){
+    constructor({ position, velocity, color, size }) {
         this.position = position;
         this.velocity = velocity;
         this.color = color;
+        this.size = size;
     }
 
-    draw(){
+    draw() {
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.position.x, this.position.y, 32, 32);
+        ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
     }
 
-    move(velocity){
+    move(velocity) {
         this.position.x += velocity.x;
         this.position.y += velocity.y;
-        if(this.position.y >= canvas.height-32){
-            this.position.y = canvas.height-32;
+        // gravity, and collision with floor
+        if (this.position.y >= canvas.height - this.size.y) {
+            this.position.y = canvas.height - this.size.y;
             this.velocity.y = 0;
         } else {
             this.velocity.y += gravity_sim;
         }
-        
+        // collision with walls
+        if (this.position.x <= 0) {
+            this.position.x = 0
+        } else if (this.position.x >= canvas.width - this.size.x) {
+            this.position.x = canvas.width - this.size.x
+        }
+        //collision with ceiling
+        if (this.position.y <= 0) {
+            this.position.y = 0
+        }
+
     }
 
-  
 
-    update(){
+
+    update() {
         this.draw();
         this.move(this.velocity);
-      
+
     }
 }
 
@@ -70,6 +82,10 @@ const player1 = new Sprite({
         y: 10
     },
     color: 'red',
+    size: {
+        x: 32,
+        y: 100
+    }
 });
 
 const player2 = new Sprite({
@@ -82,27 +98,40 @@ const player2 = new Sprite({
         y: 10
     },
     color: 'green',
+    size: {
+        x: 32,
+        y: 80,
+    }
 });
 
-function animate(){
+function animate() {
     window.requestAnimationFrame(animate);
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player1.update();
     player2.update();
 
-      // player movement
-      player1.velocity.x = 0
+    // player movement
+    player1.velocity.x = 0
+    player2.velocity.x = 0
 
-  if (keys.a.pressed && player1.lastKey === 'a') {
-    player1.velocity.x = -5
+    if (keys.a.pressed && player1.lastKey === 'a') {
+        player1.velocity.x = -5
 
-  } else if (keys.d.pressed && player1.lastKey === 'd') {
-    player1.velocity.x = 5
+    } else if (keys.d.pressed && player1.lastKey === 'd') {
+        player1.velocity.x = 5
 
-  } else {
- 
-  }
+    } else {
+
+    }
+    if (keys.ArrowLeft.pressed && player2.lastKey === 'ArrowLeft') {
+        player2.velocity.x = -5
+
+    } else if (keys.ArrowRight.pressed && player2.lastKey === 'ArrowRight') {
+        player2.velocity.x = 5
+
+    } else {
+    }
 
 
 }
@@ -110,7 +139,7 @@ function animate(){
 animate();
 
 window.addEventListener('keydown', (e) => {
-    switch(e.key){
+    switch (e.key) {
         case 'w':
             player1.velocity.y = -10
             break;
@@ -122,18 +151,37 @@ window.addEventListener('keydown', (e) => {
             keys.d.pressed = true;
             player1.lastKey = 'd';
             break;
+        case 'ArrowLeft':
+            keys.ArrowLeft.pressed = true
+            player2.lastKey = 'ArrowLeft'
+            break;
+        case 'ArrowRight':
+            keys.ArrowRight.pressed = true;
+            player2.lastKey = 'ArrowRight';
+            break;
+        case 'ArrowUp':
+            player2.velocity.y = -10
+            break;
+
     }
 
 });
 
 window.addEventListener('keyup', (e) => {
-    switch(e.key){
+    switch (e.key) {
         case 'a':
             keys.a.pressed = false
             break;
         case 'd':
             keys.d.pressed = false;
             break;
+        case 'ArrowLeft':
+            keys.ArrowLeft.pressed = false
+            break;
+        case 'ArrowRight':
+            keys.ArrowRight.pressed = false;
+            break;
+
     }
 });
 
